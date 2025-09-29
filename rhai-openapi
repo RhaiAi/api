@@ -1,0 +1,74 @@
+openapi: 3.0.3
+info:
+  title: RHAI API
+  description: >
+    Catálogo oficial de endpoints da plataforma RHAI.  
+    Apenas **Edge Functions** ficam expostas no Swagger.  
+    RPCs e tabelas internas não aparecem (uso interno do Supabase).  
+  version: 1.0.0
+  contact:
+    name: Time RHAI
+    email: suporte@rhai.com
+
+servers:
+  - url: https://gmtexatrdgqaymnknopd.supabase.co
+    description: Supabase RHAI (produção)
+  - url: http://localhost:54321
+    description: Supabase RHAI (local dev)
+
+paths:
+  /functions/v1/search-occupation:
+    post:
+      summary: Super Busca Ocupacional (RHAI)
+      description: >
+        Endpoint oficial da busca ocupacional.
+
+        **Fluxo:**
+        1. Recebe termo de busca (`search_term`)  
+        2. Gera embedding (OpenAI) e consulta a RPC `rhai_search_occupation`  
+        3. Se encontra resultados internos → retorna direto  
+        4. Caso contrário → fallback na IA externa (GPT)  
+        5. Persiste sugestões e logs no Supabase  
+        6. Retorna resposta padronizada em JSON
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - search_term
+              properties:
+                search_term:
+                  type: string
+                  example: "engenheiro de prompt"
+      responses:
+        '200':
+          description: Resposta padronizada da busca ocupacional
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  anomaly:
+                    type: boolean
+                    example: false
+                  layer:
+                    type: string
+                    enum: [internal, external]
+                    example: "internal"
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        suggestion:
+                          type: string
+                          example: "Engenheiro de Prompt"
+        '400':
+          description: Erro de validação (parâmetro ausente ou inválido)
+        '500':
+          description: Erro interno do servidor
