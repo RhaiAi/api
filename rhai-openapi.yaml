@@ -4,71 +4,249 @@ info:
   description: >
     Catálogo oficial de endpoints da plataforma RHAI.  
     Apenas **Edge Functions** ficam expostas no Swagger.  
-    RPCs e tabelas internas não aparecem (uso interno do Supabase).  
+    RPCs e tabelas internas não aparecem.  
   version: 1.0.0
   contact:
     name: Time RHAI
     email: suporte@rhai.com
 
 servers:
-  - url: https://gmtexatrdgqaymnknopd.supabase.co
+  - url: https://gmtexatrdgqaymnknopd.supabase.co/functions/v1
     description: Supabase RHAI (produção)
-  - url: http://localhost:54321
+  - url: http://localhost:54321/functions/v1
     description: Supabase RHAI (local dev)
 
-paths:
-  /functions/v1/search-occupation:
-    post:
-      summary: Super Busca Ocupacional (RHAI)
-      description: >
-        Endpoint oficial da busca ocupacional.
+tags:
+  - name: Busca Ocupacional
+    description: Endpoints relacionados à super busca e autocomplete de ocupações.
+  - name: Cursos
+    description: Endpoints para CRUD de cursos.
+  - name: Ocupação ↔ Cursos
+    description: Endpoints para vincular cursos às ocupações.
 
-        **Fluxo:**
-        1. Recebe termo de busca (`search_term`)  
-        2. Gera embedding (OpenAI) e consulta a RPC `rhai_search_occupation`  
-        3. Se encontra resultados internos → retorna direto  
-        4. Caso contrário → fallback na IA externa (GPT)  
-        5. Persiste sugestões e logs no Supabase  
-        6. Retorna resposta padronizada em JSON
+paths:
+  # ============================================================
+  # 🔹 BLOCO: BUSCA OCUPACIONAL
+  # ============================================================
+  /search-occupation:
+    post:
+      tags: [Busca Ocupacional]
+      summary: Super Busca Ocupacional (RHAI)
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required:
-                - search_term
+              required: [search_term]
               properties:
                 search_term:
                   type: string
                   example: "engenheiro de prompt"
       responses:
         '200':
-          description: Resposta padronizada da busca ocupacional
+          description: Resposta padronizada
+        '400':
+          description: Erro de validação
+        '500':
+          description: Erro interno do servidor
+
+  /rhai_edge_search_occupation_list:
+    get:
+      tags: [Busca Ocupacional]
+      summary: Autocomplete ocupações
+      parameters:
+        - name: query
+          in: query
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
+      responses:
+        '200':
+          description: Lista de ocupações para autocomplete
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id: { type: integer }
+                    name: { type: string }
+  
+    /rhai_edge_search_occupation_list/list:
+    get:
+      tags: [Busca Ocupacional]
+      summary: Autocomplete / Listar ocupações ativas
+      description: Retorna ocupações **ativas** com busca por nome (ILIKE). Usado em dropdowns/autocomplete.
+      parameters:
+        - name: query
+          in: query
+          description: Texto para busca (ILIKE %query%)
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 50, minimum: 1, maximum: 200 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0, minimum: 0 }
+      responses:
+        '200':
+          description: Lista de ocupações (id + name)
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  success:
-                    type: boolean
-                    example: true
-                  anomaly:
-                    type: boolean
-                    example: false
-                  layer:
-                    type: string
-                    enum: [internal, external]
-                    example: "internal"
-                  results:
+                  ok: { type: boolean, example: true }
+                  data:
                     type: array
                     items:
                       type: object
                       properties:
-                        suggestion:
-                          type: string
-                          example: "Engenheiro de Prompt"
+                        id:   { type: integer, example: 747 }
+                        name: { type: string,  example: "Administrador de Empresas" }
         '400':
-          description: Erro de validação (parâmetro ausente ou inválido)
+          description: Erro de validação
+        '500':
+          description: Erro interno
+
+  # ============================================================
+  # 🔹 BLOCO: CURSOS
+  # ============================================================
+  /rhai_edge_courses_new/list:
+    get:
+      tags: [Cursos]
+      summary: Lista cursos
+      parameters:
+        - name: p_query
+          in: query
+          schema: { type: string }
+        - name: p_limit
+          in: query
+          schema: { type: integer, default: 50 }
+        - name: p_offset
+          in: query
+          schema: { type: integer, default: 0 }
+      responses:
+        '200':
+          description: Lista de cursos
+
+  /rhai_edge_courses_new/insert:
+    post:
+      tags: [Cursos]
+      summary: Inserir curso
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                p_name: { type: string }
+                p_qualification_type_id: { type: integer }
+                p_country_id: { type: integer }
+      responses:
+        '200':
+          description: Curso inserido com sucesso
+        '400':
+          description: Erro de validação
         '500':
           description: Erro interno do servidor
+
+  /rhai_edge_courses_new/update:
+    put:
+      tags: [Cursos]
+      summary: Atualizar curso
+      responses:
+        '200':
+          description: Curso atualizado
+        '400':
+          description: Erro de validação
+        '500':
+          description: Erro interno do servidor
+
+  /rhai_edge_courses_new/delete/{id}:
+    delete:
+      tags: [Cursos]
+      summary: Remover curso
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Curso removido
+        '404':
+          description: Curso não encontrado
+
+  # ============================================================
+  # 🔹 BLOCO: OCUPAÇÃO ↔ CURSOS
+  # ============================================================
+  /rhai_edge_occ_edu/list:
+    get:
+      tags: [Ocupação ↔ Cursos]
+      summary: Lista vínculos Ocupação ↔ Curso
+      parameters:
+        - name: p_occupation_ids
+          in: query
+          schema: { type: array, items: { type: integer } }
+        - name: p_course_ids
+          in: query
+          schema: { type: array, items: { type: integer } }
+      responses:
+        '200':
+          description: Lista de vínculos Ocupação ↔ Curso
+
+  /rhai_edge_occ_edu/insert:
+    post:
+      tags: [Ocupação ↔ Cursos]
+      summary: Inserir vínculo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                p_occupation_id: { type: integer }
+                p_course_id: { type: integer }
+                p_mandatory: { type: boolean }
+                p_relevance: { type: string, enum: [AR,MR,BR] }
+      responses:
+        '200':
+          description: Vínculo criado
+        '400':
+          description: Erro de validação
+        '500':
+          description: Erro interno
+
+  /rhai_edge_occ_edu/update:
+    put:
+      tags: [Ocupação ↔ Cursos]
+      summary: Atualizar vínculo
+      responses:
+        '200':
+          description: Vínculo atualizado
+        '400':
+          description: Erro de validação
+        '500':
+          description: Erro interno
+
+  /rhai_edge_occ_edu/delete/{id}:
+    delete:
+      tags: [Ocupação ↔ Cursos]
+      summary: Remover vínculo
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Vínculo removido
+        '404':
+          description: Vínculo não encontrado
