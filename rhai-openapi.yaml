@@ -54,40 +54,17 @@ paths:
   /rhai_edge_search_occupation_list:
     get:
       tags: [Busca Ocupacional]
-      summary: Autocomplete ocupações
+      summary: Autocomplete de ocupações
+      description: >
+        Retorna lista de ocupações **ativas** com busca parcial (ILIKE)  
+        em `occupations.name` e `occupation_similar_names_new.normalized_name`.  
+        Usado em dropdowns/autocomplete no Lovable.
       parameters:
         - name: query
           in: query
+          description: Texto de busca parcial
           schema: { type: string }
-        - name: limit
-          in: query
-          schema: { type: integer, default: 20 }
-        - name: offset
-          in: query
-          schema: { type: integer, default: 0 }
-      responses:
-        '200':
-          description: Lista de ocupações para autocomplete
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id: { type: integer }
-                    name: { type: string }
-  
-    /rhai_edge_search_occupation_list/list:
-    get:
-      tags: [Busca Ocupacional]
-      summary: Autocomplete / Listar ocupações ativas
-      description: Retorna ocupações **ativas** com busca por nome (ILIKE). Usado em dropdowns/autocomplete.
-      parameters:
-        - name: query
-          in: query
-          description: Texto para busca (ILIKE %query%)
-          schema: { type: string }
+          example: "diretor de criacao"
         - name: limit
           in: query
           schema: { type: integer, default: 50, minimum: 1, maximum: 200 }
@@ -96,22 +73,20 @@ paths:
           schema: { type: integer, default: 0, minimum: 0 }
       responses:
         '200':
-          description: Lista de ocupações (id + name)
+          description: Lista de ocupações encontradas
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  ok: { type: boolean, example: true }
                   data:
                     type: array
                     items:
                       type: object
                       properties:
-                        id:   { type: integer, example: 747 }
-                        name: { type: string,  example: "Administrador de Empresas" }
-        '400':
-          description: Erro de validação
+                        id:   { type: integer, example: 750 }
+                        name: { type: string,  example: "Diretor de criação" }
+                        register_code: { type: string, example: "2531-30" }
         '500':
           description: Erro interno
 
@@ -121,7 +96,7 @@ paths:
   /rhai_edge_courses_new/list:
     get:
       tags: [Cursos]
-      summary: Lista cursos
+      summary: Listar cursos
       parameters:
         - name: p_query
           in: query
@@ -151,11 +126,11 @@ paths:
                 p_country_id: { type: integer }
       responses:
         '200':
-          description: Curso inserido com sucesso
+          description: Curso inserido
         '400':
           description: Erro de validação
         '500':
-          description: Erro interno do servidor
+          description: Erro interno
 
   /rhai_edge_courses_new/update:
     put:
@@ -167,7 +142,7 @@ paths:
         '400':
           description: Erro de validação
         '500':
-          description: Erro interno do servidor
+          description: Erro interno
 
   /rhai_edge_courses_new/delete/{id}:
     delete:
@@ -186,25 +161,23 @@ paths:
 
   /rhai_edge_search_courses_autocomplete:
     get:
+      tags: [Cursos]
       summary: Autocomplete de cursos
       description: >
-        Retorna lista de cursos ativos para alimentar dropdowns com busca.  
-        Usa `LIKE %%` no nome e nome_normalized.  
-        Sempre limitado/paginado.  
+        Retorna cursos ativos para autocomplete.  
+        Usa busca `ILIKE` em `name` e `name_normalized`.  
+        Paginado por `limit` e `offset`.
       parameters:
         - name: query
           in: query
           schema: { type: string }
-          description: Termo de busca parcial
           example: "administração"
         - name: limit
           in: query
           schema: { type: integer, default: 20 }
-          description: Máximo de registros a retornar
         - name: offset
           in: query
           schema: { type: integer, default: 0 }
-          description: Offset para paginação
       responses:
         '200':
           description: Lista de cursos encontrados
@@ -213,31 +186,17 @@ paths:
               schema:
                 type: object
                 properties:
-                  success:
-                    type: boolean
-                    example: true
-                  results:
+                  data:
                     type: array
                     items:
                       type: object
                       properties:
-                        id:
-                          type: integer
-                          example: 1
-                        name:
-                          type: string
-                          example: "Administração"
-                        qualification_type:
-                          type: string
-                          example: "Bacharelado"
-                        country_name:
-                          type: string
-                          example: "Brasil"
-        '400':
-          description: Erro de validação
+                        id:   { type: integer, example: 1 }
+                        name: { type: string, example: "Administração" }
+                        qualification_type: { type: string, example: "Bacharelado" }
+                        country_name: { type: string, example: "Brasil" }
         '500':
           description: Erro interno
-
 
   # ============================================================
   # 🔹 BLOCO: OCUPAÇÃO ↔ CURSOS
@@ -245,7 +204,7 @@ paths:
   /rhai_edge_occ_edu/list:
     get:
       tags: [Ocupação ↔ Cursos]
-      summary: Lista vínculos Ocupação ↔ Curso
+      summary: Listar vínculos Ocupação ↔ Curso
       parameters:
         - name: p_occupation_ids
           in: query
@@ -255,12 +214,12 @@ paths:
           schema: { type: array, items: { type: integer } }
       responses:
         '200':
-          description: Lista de vínculos Ocupação ↔ Curso
+          description: Lista de vínculos
 
   /rhai_edge_occ_edu/insert:
     post:
       tags: [Ocupação ↔ Cursos]
-      summary: Inserir vínculo
+      summary: Criar vínculo
       requestBody:
         required: true
         content:
@@ -271,6 +230,7 @@ paths:
                 p_course_id: { type: integer }
                 p_mandatory: { type: boolean }
                 p_relevance: { type: string, enum: [AR,MR,BR] }
+                p_notes: { type: string }
       responses:
         '200':
           description: Vínculo criado
@@ -294,7 +254,7 @@ paths:
   /rhai_edge_occ_edu/delete/{id}:
     delete:
       tags: [Ocupação ↔ Cursos]
-      summary: Remover vínculo
+      summary: Remover vínculo (soft delete)
       parameters:
         - name: id
           in: path
