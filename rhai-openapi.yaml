@@ -184,6 +184,61 @@ paths:
         '404':
           description: Curso não encontrado
 
+  /rhai_edge_search_courses_autocomplete:
+    get:
+      summary: Autocomplete de cursos
+      description: >
+        Retorna lista de cursos ativos para alimentar dropdowns com busca.  
+        Usa `LIKE %%` no nome e nome_normalized.  
+        Sempre limitado/paginado.  
+      parameters:
+        - name: query
+          in: query
+          schema: { type: string }
+          description: Termo de busca parcial
+          example: "administração"
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20 }
+          description: Máximo de registros a retornar
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
+          description: Offset para paginação
+      responses:
+        '200':
+          description: Lista de cursos encontrados
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        name:
+                          type: string
+                          example: "Administração"
+                        qualification_type:
+                          type: string
+                          example: "Bacharelado"
+                        country_name:
+                          type: string
+                          example: "Brasil"
+        '400':
+          description: Erro de validação
+        '500':
+          description: Erro interno
+
+
   # ============================================================
   # 🔹 BLOCO: OCUPAÇÃO ↔ CURSOS
   # ============================================================
