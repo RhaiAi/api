@@ -362,3 +362,100 @@ paths:
         '500':
           description: Erro interno
 
+  # ============================================================
+  # 🔹 BLOCO: SOFT SKILLS
+  # ============================================================
+  /rhai_edge_soft_skills_crud:
+    post:
+      tags: [Soft Skills]
+      summary: CRUD de Soft Skills
+      description: >
+        Endpoint unificado para manipulação da **biblioteca de Soft Skills**.  
+        A ação deve ser informada no corpo (`create`, `update`, `delete`, `list`).  
+        Toda alteração é registrada em `skills_library_logs`.  
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [action]
+              properties:
+                action:
+                  type: string
+                  enum: [create, update, delete, list]
+                  example: create
+                p_soft_skill_name:
+                  type: string
+                  example: "Resiliência"
+                p_theme:
+                  type: string
+                  example: "Interpessoal"
+                p_id:
+                  type: integer
+                  example: 1
+                p_search:
+                  type: string
+                  example: "resiliencia"
+                p_only_active:
+                  type: boolean
+                  example: true
+                p_only_validated:
+                  type: boolean
+                  example: false
+      responses:
+        '200':
+          description: Resposta da operação CRUD
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  action:  { type: string }
+                  results: { type: object }
+        '400':
+          description: Erro de validação
+        '500':
+          description: Erro interno do servidor
+
+  /rhai_edge_search_soft_skills:
+    post:
+      tags: [Soft Skills]
+      summary: Autocomplete de Soft Skills
+      description: >
+        Retorna lista de Soft Skills **ativas** com busca parcial (ILIKE)  
+        em `soft_skill_name` e `normalized_name`.  
+        Usado em dropdowns/autocomplete no Lovable.  
+        Suporta GET (?q=texto) e POST ({ q: "texto" }).  
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                q:
+                  type: string
+                  example: "resiliencia"
+      responses:
+        '200':
+          description: Lista de soft skills encontradas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:               { type: integer, example: 1 }
+                        soft_skill_name:  { type: string, example: "Resiliência Emocional" }
+                        theme:            { type: string, example: "Liderança" }
+        '500':
+          description: Erro interno
+
+
