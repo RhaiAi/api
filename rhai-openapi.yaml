@@ -265,3 +265,100 @@ paths:
           description: Vínculo removido
         '404':
           description: Vínculo não encontrado
+
+  # ============================================================
+  # 🔹 BLOCO: HARD SKILLS
+  # ============================================================
+  /rhai_edge_hard_skills_crud:
+    post:
+      tags: [Hard Skills]
+      summary: CRUD de Hard Skills
+      description: >
+        Endpoint unificado para manipulação da **biblioteca de Hard Skills**.  
+        A ação deve ser informada no corpo (`create`, `update`, `delete`, `list`).  
+        Toda alteração é registrada em `skills_library_logs`.  
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [action]
+              properties:
+                action:
+                  type: string
+                  enum: [create, update, delete, list]
+                  example: create
+                p_skill_name:
+                  type: string
+                  example: "Excel"
+                p_area:
+                  type: string
+                  example: "Administração"
+                p_id:
+                  type: integer
+                  example: 1
+                p_search:
+                  type: string
+                  example: "excel"
+                p_only_active:
+                  type: boolean
+                  example: true
+                p_only_validated:
+                  type: boolean
+                  example: false
+      responses:
+        '200':
+          description: Resposta da operação CRUD
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  action:  { type: string }
+                  results: { type: object }
+        '400':
+          description: Erro de validação
+        '500':
+          description: Erro interno do servidor
+
+  /rhai_edge_search_hard_skills:
+    post:
+      tags: [Hard Skills]
+      summary: Autocomplete de Hard Skills
+      description: >
+        Retorna lista de Hard Skills **ativas** com busca parcial (ILIKE)  
+        em `skill_name` e `normalized_name`.  
+        Usado em dropdowns/autocomplete no Lovable.  
+        Suporta GET (?q=texto) e POST ({ q: "texto" }).  
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                q:
+                  type: string
+                  example: "excel"
+      responses:
+        '200':
+          description: Lista de hard skills encontradas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:          { type: integer, example: 2 }
+                        skill_name:  { type: string, example: "Excel" }
+                        area:        { type: string, example: "Administração" }
+        '500':
+          description: Erro interno
+
