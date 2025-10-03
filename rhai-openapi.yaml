@@ -567,3 +567,215 @@ paths:
         '500':
           description: Erro interno
 
+  # ============================================================
+  # 🔹 BLOCO: OCUPAÇÃO ↔ HARD SKILLS
+  # ============================================================
+  /rhai_edge_occupation_hard_skills/list:
+    get:
+      tags: [Ocupação ↔ Hard Skills]
+      summary: Listar Hard Skills vinculadas à ocupação
+      parameters:
+        - name: occupation_id
+          in: query
+          required: true
+          schema: { type: integer }
+          example: 123
+        - name: only_active
+          in: query
+          schema: { type: boolean, default: true }
+          description: Se `false`, retorna inclusive vínculos desativados
+      responses:
+        '200':
+          description: Lista de vínculos encontrados
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: integer, example: 10 }
+                        occupation_id: { type: integer, example: 123 }
+                        skill_id: { type: integer, example: 2 }
+                        skill_name: { type: string, example: "Excel" }
+                        mandatory: { type: boolean, example: true }
+                        relevance: { type: string, example: "AR" }
+                        validated: { type: boolean, example: false }
+                        is_active: { type: boolean, example: true }
+
+  /rhai_edge_occupation_hard_skills/insert:
+    post:
+      tags: [Ocupação ↔ Hard Skills]
+      summary: Vincular Hard Skill à ocupação
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [p_occupation_id, p_skill_id]
+              properties:
+                p_occupation_id: { type: integer, example: 123 }
+                p_skill_id: { type: integer, example: 2 }
+                p_mandatory: { type: boolean, example: true }
+                p_relevance: { type: string, enum: [AR, MR, BR, NONE], example: "AR" }
+      responses:
+        '200':
+          description: Vínculo criado
+        '400':
+          description: Erro de validação
+        '500':
+          description: Erro interno
+
+  /rhai_edge_occupation_hard_skills/update:
+    put:
+      tags: [Ocupação ↔ Hard Skills]
+      summary: Atualizar vínculo de Hard Skill com ocupação
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [p_id]
+              properties:
+                p_id: { type: integer, example: 10 }
+                p_mandatory: { type: boolean, example: false }
+                p_relevance: { type: string, enum: [AR, MR, BR, NONE], example: "MR" }
+                p_validated: { type: boolean, example: true }
+                p_is_active: { type: boolean, example: true }
+      responses:
+        '200':
+          description: Vínculo atualizado
+        '400':
+          description: Erro de validação
+        '500':
+          description: Erro interno
+
+  /rhai_edge_occupation_hard_skills/delete/{id}:
+    delete:
+      tags: [Ocupação ↔ Hard Skills]
+      summary: Deletar (soft delete) vínculo Hard Skill ↔ ocupação
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+          example: 10
+      responses:
+        '200':
+          description: Vínculo desativado
+        '400':
+          description: Erro de validação
+        '500':
+          description: Erro interno
+
+
+  # ============================================================
+  # 🔹 BLOCO: OCUPAÇÃO ↔ SOFT SKILLS
+  # ============================================================
+  /rhai_edge_occupation_soft_skills/list:
+    get:
+      tags: [Ocupação ↔ Soft Skills]
+      summary: Listar Soft Skills vinculadas à ocupação
+      parameters:
+        - name: occupation_id
+          in: query
+          required: true
+          schema: { type: integer }
+          example: 123
+        - name: only_active
+          in: query
+          schema: { type: boolean, default: true }
+          description: Se `false`, retorna inclusive vínculos desativados
+      responses:
+        '200':
+          description: Lista de vínculos encontrados
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: integer, example: 15 }
+                        occupation_id: { type: integer, example: 123 }
+                        soft_skill_id: { type: integer, example: 7 }
+                        soft_skill_name: { type: string, example: "Resiliência Emocional" }
+                        target_level: { type: integer, example: 4 }
+                        criticality: { type: boolean, example: true }
+                        validated: { type: boolean, example: false }
+                        is_active: { type: boolean, example: true }
+
+  /rhai_edge_occupation_soft_skills/insert:
+    post:
+      tags: [Ocupação ↔ Soft Skills]
+      summary: Vincular Soft Skill à ocupação
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [p_occupation_id, p_soft_skill_id, p_target_level]
+              properties:
+                p_occupation_id: { type: integer, example: 123 }
+                p_soft_skill_id: { type: integer, example: 7 }
+                p_target_level: { type: integer, minimum: 1, maximum: 5, example: 4 }
+                p_criticality: { type: boolean, example: true }
+      responses:
+        '200':
+          description: Vínculo criado
+        '400':
+          description: Erro de validação
+        '500':
+          description: Erro interno
+
+  /rhai_edge_occupation_soft_skills/update:
+    put:
+      tags: [Ocupação ↔ Soft Skills]
+      summary: Atualizar vínculo de Soft Skill com ocupação
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [p_id]
+              properties:
+                p_id: { type: integer, example: 15 }
+                p_target_level: { type: integer, minimum: 1, maximum: 5, example: 5 }
+                p_criticality: { type: boolean, example: false }
+                p_validated: { type: boolean, example: true }
+                p_is_active: { type: boolean, example: true }
+      responses:
+        '200':
+          description: Vínculo atualizado
+        '400':
+          description: Erro de validação
+        '500':
+          description: Erro interno
+
+  /rhai_edge_occupation_soft_skills/delete/{id}:
+    delete:
+      tags: [Ocupação ↔ Soft Skills]
+      summary: Deletar (soft delete) vínculo Soft Skill ↔ ocupação
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+          example: 15
+      responses:
+        '200':
+          description: Vínculo desativado
+        '400':
+          description: Erro de validação
+        '500':
+          description: Erro interno
