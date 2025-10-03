@@ -266,82 +266,30 @@ paths:
         '404':
           description: Vínculo não encontrado
 
-  # ============================================================
+   # ============================================================
   # 🔹 BLOCO: HARD SKILLS
   # ============================================================
-  /rhai_edge_hard_skills_crud:
-    post:
+  /rhai_edge_hard_skills_crud/list:
+    get:
       tags: [Hard Skills]
-      summary: CRUD de Hard Skills
+      summary: Listar Hard Skills
       description: >
-        Endpoint unificado para manipulação da **biblioteca de Hard Skills**.  
-        A ação deve ser informada no corpo (`create`, `update`, `delete`, `list`).  
-        Toda alteração é registrada em `skills_library_logs`.  
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [action]
-              properties:
-                action:
-                  type: string
-                  enum: [create, update, delete, list]
-                  example: create
-                p_skill_name:
-                  type: string
-                  example: "Excel"
-                p_area:
-                  type: string
-                  example: "Administração"
-                p_id:
-                  type: integer
-                  example: 1
-                p_search:
-                  type: string
-                  example: "excel"
-                p_only_active:
-                  type: boolean
-                  example: true
-                p_only_validated:
-                  type: boolean
-                  example: false
-      responses:
-        '200':
-          description: Resposta da operação CRUD
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success: { type: boolean }
-                  action:  { type: string }
-                  results: { type: object }
-        '400':
-          description: Erro de validação
-        '500':
-          description: Erro interno do servidor
-
-  /rhai_edge_search_hard_skills:
-    post:
-      tags: [Hard Skills]
-      summary: Autocomplete de Hard Skills
-      description: >
-        Retorna lista de Hard Skills **ativas** com busca parcial (ILIKE)  
-        em `skill_name` e `normalized_name`.  
-        Usado em dropdowns/autocomplete no Lovable.  
-        Suporta GET (?q=texto) e POST ({ q: "texto" }).  
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                q:
-                  type: string
-                  example: "excel"
+        Retorna a lista de Hard Skills da biblioteca, com filtros opcionais
+        de busca, ativos e validados.
+      parameters:
+        - name: q
+          in: query
+          description: Texto parcial para busca
+          schema: { type: string }
+          example: "excel"
+        - name: only_active
+          in: query
+          schema: { type: boolean, default: true }
+          description: Se `false`, retorna inclusive desativadas
+        - name: only_validated
+          in: query
+          schema: { type: boolean, default: false }
+          description: Se `true`, retorna apenas skills validadas
       responses:
         '200':
           description: Lista de hard skills encontradas
@@ -350,94 +298,109 @@ paths:
               schema:
                 type: object
                 properties:
-                  success: { type: boolean }
-                  results:
+                  data:
                     type: array
                     items:
                       type: object
                       properties:
-                        id:          { type: integer, example: 2 }
-                        skill_name:  { type: string, example: "Excel" }
-                        area:        { type: string, example: "Administração" }
-        '500':
-          description: Erro interno
+                        id: { type: integer, example: 2 }
+                        skill_name: { type: string, example: "Excel" }
+                        normalized_name: { type: string, example: "excel" }
+                        area: { type: string, example: "Administração" }
+                        validated: { type: boolean, example: false }
+                        is_active: { type: boolean, example: true }
 
-  # ============================================================
-  # 🔹 BLOCO: SOFT SKILLS
-  # ============================================================
-  /rhai_edge_soft_skills_crud:
+  /rhai_edge_hard_skills_crud/insert:
     post:
-      tags: [Soft Skills]
-      summary: CRUD de Soft Skills
-      description: >
-        Endpoint unificado para manipulação da **biblioteca de Soft Skills**.  
-        A ação deve ser informada no corpo (`create`, `update`, `delete`, `list`).  
-        Toda alteração é registrada em `skills_library_logs`.  
+      tags: [Hard Skills]
+      summary: Criar Hard Skill
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [action]
+              required: [p_skill_name]
               properties:
-                action:
+                p_skill_name:
                   type: string
-                  enum: [create, update, delete, list]
-                  example: create
-                p_soft_skill_name:
+                  example: "Excel"
+                p_area:
                   type: string
-                  example: "Resiliência"
-                p_theme:
-                  type: string
-                  example: "Interpessoal"
-                p_id:
-                  type: integer
-                  example: 1
-                p_search:
-                  type: string
-                  example: "resiliencia"
-                p_only_active:
-                  type: boolean
-                  example: true
-                p_only_validated:
-                  type: boolean
-                  example: false
+                  example: "Administração"
       responses:
         '200':
-          description: Resposta da operação CRUD
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success: { type: boolean }
-                  action:  { type: string }
-                  results: { type: object }
+          description: Hard Skill criada
         '400':
           description: Erro de validação
         '500':
-          description: Erro interno do servidor
+          description: Erro interno
 
-  /rhai_edge_search_soft_skills:
-    post:
-      tags: [Soft Skills]
-      summary: Autocomplete de Soft Skills
-      description: >
-        Retorna lista de Soft Skills **ativas** com busca parcial (ILIKE)  
-        em `soft_skill_name` e `normalized_name`.  
-        Usado em dropdowns/autocomplete no Lovable.  
-        Suporta GET (?q=texto) e POST ({ q: "texto" }).  
+  /rhai_edge_hard_skills_crud/update:
+    put:
+      tags: [Hard Skills]
+      summary: Atualizar Hard Skill
       requestBody:
-        required: false
+        required: true
         content:
           application/json:
             schema:
               type: object
+              required: [p_id, p_skill_name]
               properties:
-                q:
-                  type: string
-                  example: "resiliencia"
+                p_id: { type: integer, example: 2 }
+                p_skill_name: { type: string, example: "Excel Avançado" }
+                p_area: { type: string, example: "TI" }
+      responses:
+        '200':
+          description: Hard Skill atualizada
+        '400':
+          description: Erro de validação
+        '500':
+          description: Erro interno
+
+  /rhai_edge_hard_skills_crud/delete/{id}:
+    delete:
+      tags: [Hard Skills]
+      summary: Deletar (soft delete) Hard Skill
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+          example: 2
+      responses:
+        '200':
+          description: Hard Skill desativada
+        '400':
+          description: Erro de validação
+        '500':
+          description: Erro interno
+
+  # ============================================================
+  # 🔹 BLOCO: SOFT SKILLS
+  # ============================================================
+  /rhai_edge_soft_skills_crud/list:
+    get:
+      tags: [Soft Skills]
+      summary: Listar Soft Skills
+      description: >
+        Retorna a lista de Soft Skills da biblioteca, com filtros opcionais
+        de busca, ativos e validados.
+      parameters:
+        - name: q
+          in: query
+          description: Texto parcial para busca
+          schema: { type: string }
+          example: "resiliencia"
+        - name: only_active
+          in: query
+          schema: { type: boolean, default: true }
+          description: Se `false`, retorna inclusive desativadas
+        - name: only_validated
+          in: query
+          schema: { type: boolean, default: false }
+          description: Se `true`, retorna apenas skills validadas
       responses:
         '200':
           description: Lista de soft skills encontradas
@@ -446,16 +409,81 @@ paths:
               schema:
                 type: object
                 properties:
-                  success: { type: boolean }
-                  results:
+                  data:
                     type: array
                     items:
                       type: object
                       properties:
-                        id:               { type: integer, example: 1 }
-                        soft_skill_name:  { type: string, example: "Resiliência Emocional" }
-                        theme:            { type: string, example: "Liderança" }
+                        id: { type: integer, example: 1 }
+                        soft_skill_name: { type: string, example: "Resiliência Emocional" }
+                        normalized_name: { type: string, example: "resiliencia emocional" }
+                        theme: { type: string, example: "Liderança" }
+                        validated: { type: boolean, example: false }
+                        is_active: { type: boolean, example: true }
+
+  /rhai_edge_soft_skills_crud/insert:
+    post:
+      tags: [Soft Skills]
+      summary: Criar Soft Skill
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [p_soft_skill_name]
+              properties:
+                p_soft_skill_name:
+                  type: string
+                  example: "Resiliência"
+                p_theme:
+                  type: string
+                  example: "Interpessoal"
+      responses:
+        '200':
+          description: Soft Skill criada
+        '400':
+          description: Erro de validação
         '500':
           description: Erro interno
 
+  /rhai_edge_soft_skills_crud/update:
+    put:
+      tags: [Soft Skills]
+      summary: Atualizar Soft Skill
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [p_id, p_soft_skill_name]
+              properties:
+                p_id: { type: integer, example: 1 }
+                p_soft_skill_name: { type: string, example: "Resiliência Emocional" }
+                p_theme: { type: string, example: "Liderança" }
+      responses:
+        '200':
+          description: Soft Skill atualizada
+        '400':
+          description: Erro de validação
+        '500':
+          description: Erro interno
 
+  /rhai_edge_soft_skills_crud/delete/{id}:
+    delete:
+      tags: [Soft Skills]
+      summary: Deletar (soft delete) Soft Skill
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+          example: 1
+      responses:
+        '200':
+          description: Soft Skill desativada
+        '400':
+          description: Erro de validação
+        '500':
+          description: Erro interno
