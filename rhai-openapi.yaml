@@ -779,3 +779,291 @@ paths:
           description: Erro de validação
         '500':
           description: Erro interno
+
+# ============================================================
+# 🔹 BLOCO: BIBLIOTECA DE CERTIFICAÇÕES
+# ============================================================
+
+/rhai_edge_certifications_library/list:
+  get:
+    tags: [Biblioteca de Certificações]
+    summary: Listar todas as certificações registradas na biblioteca
+    parameters:
+      - name: only_active
+        in: query
+        schema: { type: boolean, default: true }
+        description: Se `false`, retorna também certificações desativadas
+    responses:
+      '200':
+        description: Lista de certificações encontradas
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id: { type: integer, example: 1 }
+                      name: { type: string, example: "NR-10 Segurança em Eletricidade" }
+                      normalized_name: { type: string, example: "nr10_seguranca_eletricidade" }
+                      type: { type: string, example: "regulatory" }
+                      issuing_body: { type: string, example: "Ministério do Trabalho" }
+                      validity_period: { type: string, example: "2 anos" }
+                      is_active: { type: boolean, example: true }
+                      validated: { type: boolean, example: false }
+
+ /rhai_edge_certifications_library/insert:
+  post:
+    tags: [Biblioteca de Certificações]
+    summary: Inserir nova certificação na biblioteca
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [p_name, p_normalized_name, p_type]
+            properties:
+              p_name: { type: string, example: "Certificação PMP" }
+              p_normalized_name: { type: string, example: "certificacao_pmp" }
+              p_type: { type: string, example: "professional" }
+              p_issuing_body: { type: string, example: "PMI" }
+              p_validity_period: { type: string, example: "3 anos" }
+              p_description: { type: string, example: "Certificação internacional de gestão de projetos." }
+              p_country_id: { type: integer, example: 31 }
+    responses:
+      '200':
+        description: Certificação inserida com sucesso
+      '400':
+        description: Erro de validação
+      '500':
+        description: Erro interno
+
+ /rhai_edge_certifications_library/update:
+  put:
+    tags: [Biblioteca de Certificações]
+    summary: Atualizar informações de uma certificação existente
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [p_id]
+            properties:
+              p_id: { type: integer, example: 1 }
+              p_name: { type: string, example: "Certificação PMP Avançada" }
+              p_validity_period: { type: string, example: "5 anos" }
+              p_validated: { type: boolean, example: true }
+              p_is_active: { type: boolean, example: true }
+    responses:
+      '200':
+        description: Certificação atualizada
+      '400':
+        description: Erro de validação
+      '500':
+        description: Erro interno
+
+ /rhai_edge_certifications_library/delete/{id}:
+  delete:
+    tags: [Biblioteca de Certificações]
+    summary: Desativar (soft delete) certificação da biblioteca
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer }
+        example: 1
+    responses:
+      '200':
+        description: Certificação desativada
+      '400':
+        description: Erro de validação
+      '500':
+        description: Erro interno
+
+ /rhai_edge_certifications_library/search:
+  get:
+    tags: [Biblioteca de Certificações]
+    summary: Buscar certificações por nome ou nome normalizado (autocomplete)
+    parameters:
+      - name: search
+        in: query
+        required: true
+        schema: { type: string, minLength: 2 }
+        example: "pmp"
+      - name: only_active
+        in: query
+        schema: { type: boolean, default: true }
+        description: Se `false`, retorna também certificações inativas
+    responses:
+      '200':
+        description: Resultados da busca
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id: { type: integer, example: 1 }
+                      name: { type: string, example: "Certificação PMP" }
+                      type: { type: string, example: "professional" }
+                      issuing_body: { type: string, example: "PMI" }
+
+# ============================================================
+# 🔹 BLOCO: OCUPAÇÃO ↔ CERTIFICAÇÕES
+# ============================================================
+
+/rhai_edge_occupation_certifications/list:
+  get:
+    tags: [Ocupação ↔ Certificações]
+    summary: Listar certificações vinculadas a uma ocupação
+    parameters:
+      - name: occupation_id
+        in: query
+        required: true
+        schema: { type: integer }
+        example: 750
+      - name: only_active
+        in: query
+        schema: { type: boolean, default: true }
+        description: Se `false`, retorna inclusive vínculos desativados
+    responses:
+      '200':
+        description: Lista de vínculos encontrados
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id: { type: integer, example: 1 }
+                      occupation_id: { type: integer, example: 750 }
+                      certification_id: { type: integer, example: 1 }
+                      certification_name: { type: string, example: "Certificação Profissional em Direção de Criação (ABRADi / APP)" }
+                      certification_type: { type: string, example: "professional" }
+                      issuing_body: { type: string, example: "ABRADi / APP Brasil" }
+                      mandatory: { type: boolean, example: false }
+                      relevance: { type: string, example: "AR" }
+                      notes: { type: string, example: "Certificação recomendada para líderes de criação" }
+                      validated: { type: boolean, example: false }
+                      is_active: { type: boolean, example: true }
+
+ /rhai_edge_occupation_certifications/insert:
+  post:
+    tags: [Ocupação ↔ Certificações]
+    summary: Vincular certificação a uma ocupação
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [p_occupation_id, p_certification_id]
+            properties:
+              p_occupation_id: { type: integer, example: 750 }
+              p_certification_id: { type: integer, example: 1 }
+              p_mandatory: { type: boolean, example: false }
+              p_relevance: { type: string, example: "AR" }
+              p_notes: { type: string, example: "Certificação sugerida para líderes criativos" }
+    responses:
+      '200':
+        description: Vínculo criado
+      '400':
+        description: Erro de validação
+      '500':
+        description: Erro interno
+
+ /rhai_edge_occupation_certifications/update:
+  put:
+    tags: [Ocupação ↔ Certificações]
+    summary: Atualizar vínculo de certificação com ocupação
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [p_id]
+            properties:
+              p_id: { type: integer, example: 1 }
+              p_mandatory: { type: boolean, example: true }
+              p_relevance: { type: string, example: "MR" }
+              p_validated: { type: boolean, example: true }
+              p_is_active: { type: boolean, example: true }
+    responses:
+      '200':
+        description: Vínculo atualizado
+      '400':
+        description: Erro de validação
+      '500':
+        description: Erro interno
+
+ /rhai_edge_occupation_certifications/delete/{id}:
+  delete:
+    tags: [Ocupação ↔ Certificações]
+    summary: Deletar (soft delete) vínculo certificação ↔ ocupação
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer }
+        example: 1
+    responses:
+      '200':
+        description: Vínculo desativado
+      '400':
+        description: Erro de validação
+      '500':
+        description: Erro interno
+
+# ============================================================
+# 🔹 BLOCO: BUSCA / AUTOCOMPLETE DE CERTIFICAÇÕES
+# ============================================================
+
+/rhai_edge_search_certifications_autocomplete/search:
+  get:
+    tags: [Busca de Certificações]
+    summary: Buscar certificações por texto (autocomplete)
+    parameters:
+      - name: query
+        in: query
+        required: true
+        schema: { type: string, minLength: 2 }
+        example: "pmp"
+      - name: only_active
+        in: query
+        schema: { type: boolean, default: true }
+        description: Se `false`, retorna inclusive certificações inativas
+    responses:
+      '200':
+        description: Lista de certificações correspondentes
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id: { type: integer, example: 1 }
+                      name: { type: string, example: "Certificação PMP" }
+                      type: { type: string, example: "professional" }
+                      issuing_body: { type: string, example: "PMI" }
+
