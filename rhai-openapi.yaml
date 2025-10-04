@@ -266,7 +266,7 @@ paths:
         '404':
           description: Vínculo não encontrado
 
-   # ============================================================
+  # ============================================================
   # 🔹 BLOCO: HARD SKILLS
   # ============================================================
   /rhai_edge_hard_skills_crud/list:
@@ -783,7 +783,7 @@ paths:
 # ============================================================
 # 🔹 BLOCO: BIBLIOTECA DE CERTIFICAÇÕES
 # ============================================================
-/rhai_edge_certifications_library/list:
+ /rhai_edge_certifications_library/list:
   get:
     tags: [Biblioteca de Certificações]
     summary: Listar todas as certificações registradas na biblioteca
