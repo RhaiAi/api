@@ -783,7 +783,6 @@ paths:
 # ============================================================
 # 🔹 BLOCO: BIBLIOTECA DE CERTIFICAÇÕES
 # ============================================================
-
 /rhai_edge_certifications_library/list:
   get:
     tags: [Biblioteca de Certificações]
@@ -922,7 +921,6 @@ paths:
 # ============================================================
 # 🔹 BLOCO: OCUPAÇÃO ↔ CERTIFICAÇÕES
 # ============================================================
-
 /rhai_edge_occupation_certifications/list:
   get:
     tags: [Ocupação ↔ Certificações]
@@ -1033,7 +1031,6 @@ paths:
 # ============================================================
 # 🔹 BLOCO: BUSCA / AUTOCOMPLETE DE CERTIFICAÇÕES
 # ============================================================
-
 /rhai_edge_search_certifications_autocomplete/search:
   get:
     tags: [Busca de Certificações]
